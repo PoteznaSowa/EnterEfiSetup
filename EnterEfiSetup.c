@@ -1,4 +1,4 @@
-#define PHNT_VERSION PHNT_WIN11_24H2
+#define PHNT_VERSION PHNT_WIN8
 #include <phnt_windows.h>
 #include <evntrace.h>
 #include <phnt.h>
@@ -17,7 +17,7 @@
 
 
 #define NtPrintA(h, iosb, s) \
-NtWriteFile(h, NULL, NULL, NULL, iosb, s, strlen(s), 0, NULL)
+NtWriteFile(h, NULL, NULL, NULL, iosb, s, (ULONG)strlen(s), 0, NULL)
 
 int main() {
 	GUID globalvar = EFI_GLOBAL_VARIABLE;
