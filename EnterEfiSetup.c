@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#pragma comment(lib, "NTDLL.LIB")
+#pragma comment(lib, "NTDLL.lib")
 
 
 /* https://uefi.org/specs/UEFI/2.10/ */
