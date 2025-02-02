@@ -1,4 +1,3 @@
-#define PHNT_VERSION PHNT_WIN8
 #include <phnt_windows.h>
 #include <evntrace.h>
 #include <phnt.h>
@@ -16,25 +15,21 @@
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001
 
 
-#define NtPrintA(h, iosb, s) \
-NtWriteFile(h, NULL, NULL, NULL, iosb, s, (ULONG)strlen(s), 0, NULL)
+//#define NtPrintA(h, iosb, s) \
+//NtWriteFile(h, NULL, NULL, NULL, iosb, s, (ULONG)strlen(s), 0, NULL)
 
 int main() {
 	GUID globalvar = EFI_GLOBAL_VARIABLE;
 	UNICODE_STRING varname1 = RTL_CONSTANT_STRING(L"OsIndications");
 	UNICODE_STRING varname2 = RTL_CONSTANT_STRING(L"OsIndicationsSupported");
 
-	HANDLE nt_stdout = NtCurrentPeb()->ProcessParameters->StandardOutput;
+	//HANDLE nt_stdout = NtCurrentPeb()->ProcessParameters->StandardOutput;
 	NTSTATUS status;
 	UINT64 indic = 0;
 	ULONG varlen = sizeof(UINT64);
 	BOOLEAN r;
 	ULONG attr;
 	IO_STATUS_BLOCK iosb;
-
-	LARGE_INTEGER li = {
-		.QuadPart = -20'000'000
-	};
 
 	status = RtlAdjustPrivilege(SE_SYSTEM_ENVIRONMENT_PRIVILEGE, TRUE, FALSE, &r);
 	if (status) {
@@ -50,13 +45,14 @@ int main() {
 
 	if (indic & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
 	} else {
-		NtPrintA(nt_stdout, &iosb, "The system does not support booting to EFI settings.\n");
+		puts("The system does not support booting to EFI settings.");
 		goto exit;
 	}
 
 	varlen = sizeof(UINT64);
 	status = NtQuerySystemEnvironmentValueEx(&varname1, &globalvar, &indic, &varlen, NULL);
 	if (status) {
+		// If the variable is not found, we will create it with cleared flags.
 		indic = 0;
 	}
 	indic |= EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
@@ -69,9 +65,9 @@ int main() {
 		goto exit;
 	}
 
-	NtPrintA(nt_stdout, &iosb, "The system will enter EFI setup on next boot.\n");
+	puts("The system will enter EFI setup on next boot.");
 
 exit:
-	NtDelayExecution(FALSE, &li);
+	Sleep(2000);
 	return 0;
 }
