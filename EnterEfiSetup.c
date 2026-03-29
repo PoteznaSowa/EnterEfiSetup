@@ -1,6 +1,6 @@
 #ifdef _WIN32
 
-#pragma comment(lib, "NTDLL.lib")
+#pragma comment(lib, "ntdll.lib")
 #include <phnt_windows.h>
 #include <evntrace.h>
 #include <phnt.h>
@@ -25,8 +25,15 @@
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI	0x0000000000000001
 
 
+#ifdef _WIN32
+#define PrintW(s) do { \
+	DWORD r; \
+	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), s, wcslen(s), &r, NULL); \
+} while (0)
+
 //#define NtPrintA(h, iosb, s) \
 //NtWriteFile(h, NULL, NULL, NULL, iosb, s, (ULONG)strlen(s), 0, NULL)
+#endif
 
 int main() {
 #ifdef _WIN32
@@ -40,7 +47,7 @@ int main() {
 	ULONG varlen = sizeof(UINT64);
 	BOOLEAN r;
 	ULONG attr;
-	IO_STATUS_BLOCK iosb;
+	//IO_STATUS_BLOCK iosb;
 
 	LARGE_INTEGER delay = {
 		.QuadPart = -20'000'000
@@ -58,9 +65,8 @@ int main() {
 		goto exit;
 	}
 
-	if (indic & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
-	} else {
-		puts("The system does not support booting to EFI settings.");
+	if (~indic & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
+		PrintW(L"The system does not support booting to EFI settings.\n");
 		goto exit;
 	}
 
@@ -80,12 +86,13 @@ int main() {
 		goto exit;
 	}
 
-	puts("The system will enter EFI setup on next boot.");
+	PrintW(L"The system will enter EFI setup on the next boot.\n");
 
 exit:
 	NtDelayExecution(FALSE, &delay);
-	return 0;
-#else	; _WIN32
+#else	// _WIN32
 	// TODO: Implement for Linux
-#endif
+#endif	// _WIN32
+
+	return 0;
 }
