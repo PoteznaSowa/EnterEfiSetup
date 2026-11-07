@@ -64,6 +64,7 @@ int main() {
 		printf("Cannot query OsIndicationsSupported: 0x%08X\n", status);
 		goto exit;
 	}
+	printf("OsIndicationsSupported is 0x%016llu.\n", indic);
 
 	if (~indic & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
 		PrintW(L"The system does not support booting to EFI settings.\n");
@@ -74,17 +75,21 @@ int main() {
 	status = NtQuerySystemEnvironmentValueEx(&varname1, &globalvar, &indic, &varlen, NULL);
 	if (status) {
 		// If the variable is not found, we will create it with cleared flags.
+		puts("Creating OsIndications...");
 		indic = 0;
 	}
 	indic |= EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
+
 	attr = EFI_VARIABLE_NON_VOLATILE |
 		EFI_VARIABLE_BOOTSERVICE_ACCESS |
 		EFI_VARIABLE_RUNTIME_ACCESS;
+
 	status = NtSetSystemEnvironmentValueEx(&varname1, &globalvar, &indic, sizeof(UINT64), attr);
 	if (status) {
 		printf("Cannot set OsIndications: 0x%08X\n", status);
 		goto exit;
 	}
+	printf("Set OsIndications to 0x%016llu.\n", indic);
 
 	PrintW(L"The system will enter EFI setup on the next boot.\n");
 
